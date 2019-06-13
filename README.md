@@ -3,7 +3,8 @@
 Code für die zwei Arduinos des Kamel Roboters.
 Die Kommunikation findet über den I²C-Bus statt.
 
-Den aktuellen Code der Bildauswertung werden wir nach dem RoboCup 2020 veröffentlichen.  
+Den aktuellen Code der Bildauswertung werden wir nach dem RoboCup 2020 veröffentlichen.
+
 ~~Älteren Code gibt es hier.~~
 
 
