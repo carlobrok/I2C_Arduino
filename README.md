@@ -7,8 +7,8 @@ Den aktuellen Code der Bildauswertung werden wir nach dem RoboCup 2020 veröffen
 ~~Älteren Code gibt es hier.~~
   
   
+  
 ## I²C Kommunikation
-
 
 Computer | I²C-Rolle | Aufgabe
 ---------|-------|---------
