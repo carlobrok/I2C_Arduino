@@ -5,9 +5,10 @@ Die Kommunikation findet über den I²C-Bus statt.
 
 Den aktuellen Code der Bildauswertung werden wir nach dem RoboCup 2020 veröffentlichen.  
 ~~Älteren Code gibt es hier.~~
-  
-  
-  
+
+
+<br>
+
 ## I²C Kommunikation
 
 Computer | I²C-Rolle | Aufgabe
