@@ -44,6 +44,12 @@ void Motor::zurueck(int speed) {
   analogWrite(_pin_d, speed);
 }
 
+void Motor::aus() {
+  digitalWrite(_pin_in1, LOW);
+  digitalWrite(_pin_in2, LOW);
+  analogWrite(_pin_d, 0);
+}
+
 float Motor::get_current() {
   return analogRead(_pin_fb) / ( 1023 /(5 * 0.55));
 }

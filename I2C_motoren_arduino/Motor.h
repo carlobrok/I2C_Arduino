@@ -3,6 +3,14 @@
 
 #include "Arduino.h"
 
+#define MOTOR_LEFT 0
+#define MOTOR_RIGHT 1
+#define MOTOR_BOTH 2
+
+#define MOTOR_FORWARD 0
+#define MOTOR_BACKWARD 1
+#define MOTOR_OFF 2
+
 class Motor
 {
   public:
@@ -12,7 +20,8 @@ class Motor
       vor(),
       vor(int speed),
       zurueck(),
-      zurueck(int speed);
+      zurueck(int speed),
+      aus();
     float get_current();
  
   private:
