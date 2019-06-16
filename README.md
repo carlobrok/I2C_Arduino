@@ -5,7 +5,7 @@ Die Kommunikation findet über den I²C-Bus statt.
 
 Den aktuellen Code der Bildauswertung werden wir nach dem RoboCup 2020 veröffentlichen.
 
-~~Älteren Code gibt es hier.~~
+Älteren Code gibt es hier: https://github.com/carlobrok/PIv10
 
 
 <br>
