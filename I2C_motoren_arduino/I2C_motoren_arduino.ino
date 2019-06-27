@@ -100,8 +100,8 @@ void receiveEvent(int byte_amount) {
       motorRight.update(state);
     } else if (side == MOTOR_BOTH) {
       motorLeft.update(state);
-      motorRight.update(dir, pwm);
-    } else [
+      motorRight.update(state);
+    } else {
       recieveError();
     }
   } else {
