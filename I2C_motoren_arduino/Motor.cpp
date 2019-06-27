@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "Motor.h"
 
-#define NORMAL_SPEED 100
+#define NORMAL_SPEED 90
 
 Motor::Motor(int pin_d, int pin_in1, int pin_in2, int pin_fb, int pin_sf) {
   _pin_d = pin_d;
@@ -20,27 +20,45 @@ void Motor::setupInterruptHandler(void (*ISR)(void), int value) {
   attachInterrupt(digitalPinToInterrupt(_pin_sf), ISR, RISING);
 }
 
+void Motor::update(int direction, int speed) {
+  if(direction == MOTOR_FORWARD) {
+    vor(speed);
+  } else if (direction == MOTOR_BACKWARD) {
+    zurueck(speed);
+  }
+}
+
+void Motor::update(int state) {
+  if (state == MOTOR_OFF) {
+    aus();
+  } else if(state == MOTOR_FORWARD_NORMAL) {
+    vor();
+  } else if(state == MOTOR_BACKWARD_NORMAL) {
+    zurueck();
+  }
+}
+
 void Motor::vor() {
-  digitalWrite(_pin_in1, HIGH);
-  digitalWrite(_pin_in2, LOW);
+  digitalWrite(_pin_in1, LOW);
+  digitalWrite(_pin_in2, HIGH);
   analogWrite(_pin_d, NORMAL_SPEED);
 }
 
 void Motor::vor(int speed) {
-  digitalWrite(_pin_in1, HIGH);
-  digitalWrite(_pin_in2, LOW);
+  digitalWrite(_pin_in1, LOW);
+  digitalWrite(_pin_in2, HIGH);
   analogWrite(_pin_d, speed);
 }
 
 void Motor::zurueck() {
-  digitalWrite(_pin_in1, LOW);
-  digitalWrite(_pin_in2, HIGH);
+  digitalWrite(_pin_in1, HIGH);
+  digitalWrite(_pin_in2, LOW);
   analogWrite(_pin_d, NORMAL_SPEED);
 }
 
 void Motor::zurueck(int speed) {
-  digitalWrite(_pin_in1, LOW);
-  digitalWrite(_pin_in2, HIGH);
+  digitalWrite(_pin_in1, HIGH);
+  digitalWrite(_pin_in2, LOW);
   analogWrite(_pin_d, speed);
 }
 

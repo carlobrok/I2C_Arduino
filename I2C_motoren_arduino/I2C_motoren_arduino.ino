@@ -3,9 +3,8 @@
 
 #define SERIAL_OUTPUT
 
-Motor motorLeft(5, 7, 8, A0, 2);
-Motor motorRight(6, 9, 10, A1, 3);
-
+Motor motorRight(5, 7, 8, A0, 2);
+Motor motorLeft(6, 9, 10, A1, 3);
 
 void setup() {
   Wire.begin(0x08);
@@ -17,6 +16,13 @@ void setup() {
   Serial.begin(115200);
 #endif
 }
+
+inline void recieveError() {
+#ifdef SERIAL_OUTPUT
+  Serial.println("WARNING: Recieved wrong/corrupted data");
+#endif
+}
+
 
 void loop() {
 
@@ -30,67 +36,76 @@ void loop() {
 
 void receiveEvent(int byte_amount) {
 
-  digitalWrite(LED_BUILTIN, HIGH);
-
 #ifdef SERIAL_OUTPUT
   Serial.print("Anzahl: ");
   Serial.println(byte_amount);
 #endif
 
-  while (Wire.available() > 3) {
-#ifdef SERIAL_OUTPUT
-    Serial.print(Wire.read());
-    Serial.print(" ");
-#else
-    Wire.read();
-#endif
+  if (byte_amount == 2) {
+    recieveError();
+    return;
   }
 
-  int side = Wire.read();
-  int dir = Wire.read();
-  int pwm = Wire.read();
+  digitalWrite(LED_BUILTIN, HIGH);
 
-#ifdef SERIAL_OUTPUT
-  Serial.print("Side: ");
-  Serial.print(side);
-  Serial.print(" Direction: ");
-  Serial.print(dir);
-  Serial.print(" PWM-Value: ");
-  Serial.println(pwm);
-#endif
-  // Update motor values
+  int command = Wire.read();
+  int puffer_b = Wire.read();
 
-  if (side == MOTOR_BOTH) {
-    if (dir == MOTOR_FORWARD) {
-      motorLeft.vor(pwm);
-      motorRight.vor(pwm);
-    } else if (dir == MOTOR_BACKWARD) {
-      motorLeft.zurueck(pwm);
-      motorRight.zurueck(pwm);
-    } else if (dir == MOTOR_OFF) {
-      motorLeft.aus();
-      motorRight.aus();
+  Serial.print("Comand: ");
+  Serial.print(command);
+  Serial.print("\tPuffer: ");
+  Serial.println(puffer_b);
+
+  int inbytes[byte_amount - 2];
+
+  int index = 0;
+  while (Wire.available() && index < byte_amount - 2) {
+    inbytes[index++] = Wire.read();
+    Serial.print(inbytes[index - 1]);
+    Serial.print(" ");
+  }
+  Serial.println();
+
+
+  if (command == MOTOR_DIR_PWM) {
+    int side = inbytes[0];
+    int dir = inbytes[1];
+    int pwm = inbytes[2];
+
+    if (side == MOTOR_LEFT) {
+      motorLeft.update(dir, pwm);
+    } else if (side == MOTOR_RIGHT) {
+      motorRight.update(dir, pwm);
+    } else if (side == MOTOR_BOTH) {
+      motorLeft.update(dir, pwm);
+      motorRight.update(dir, pwm);
     }
-  } else if (side == MOTOR_LEFT) {
-    if (dir == MOTOR_FORWARD)
-      motorLeft.vor(pwm);
+  }
+  else if (command == MOTOR_DIR_PWM_BOTH) {
+    int dir_l = inbytes[0];
+    int pwm_l = inbytes[1];
+    int dir_r = inbytes[2];
+    int pwm_r = inbytes[3];
 
-    else if (dir == MOTOR_BACKWARD)
-      motorLeft.zurueck(pwm);
+    motorLeft.update(dir_l, pwm_l);
+    motorRight.update(dir_r, pwm_r);
 
-    else if (dir == MOTOR_OFF)
-      motorLeft.aus();
+  } else if (command = MOTOR_STATE) {
+    int side = inbytes[0];
+    int state = inbytes[1];
 
-  } else if (side == MOTOR_RIGHT) {
-    if (dir == MOTOR_FORWARD)
-      motorRight.vor(pwm);
-
-    else if (dir == MOTOR_BACKWARD)
-      motorRight.zurueck(pwm);
-
-    else if (dir == MOTOR_OFF)
-      motorRight.aus();
-
+    if (side == MOTOR_LEFT) {
+      motorLeft.update(state);
+    } else if (side == MOTOR_RIGHT) {
+      motorRight.update(state);
+    } else if (side == MOTOR_BOTH) {
+      motorLeft.update(state);
+      motorRight.update(dir, pwm);
+    } else [
+      recieveError();
+    }
+  } else {
+    recieveError();
   }
 
   digitalWrite(LED_BUILTIN, LOW);
