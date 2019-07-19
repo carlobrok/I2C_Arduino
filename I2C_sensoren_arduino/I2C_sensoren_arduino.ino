@@ -36,6 +36,23 @@ int analog_sensors[1] = {IR_VORNE_M};
 int analog_sensor_data[1];      // All bytes of analog sensors
 
 
+// Debug variables
+
+#define LED_ON_TIME 50    // Time led will be on when data is send
+bool led_on = false;
+unsigned long led_last_change = 0;
+
+inline void led_debug() {
+  led_last_change = millis();
+  led_on = true;
+}
+
+inline void set_led() {
+  if(millis() - led_last_change >= LED_ON_TIME && led_on) {
+    led_on = false;
+  }
+  digitalWrite(LED_BUILTIN, led_on);
+}
 
 void setup() {
   Wire.begin(SLAVE_ADDRESS); // begin I2C Connection with 0x09 address
@@ -48,6 +65,7 @@ void setup() {
   }
   
   Wire.onRequest(sendData); // sendData is called when Pi requests data 
+  pinMode(LED_BUILTIN, OUTPUT);   // Debug LED
 }
 
 
@@ -62,6 +80,7 @@ void sendData() {
   }
   
   Wire.write(compressed_data_digital); // return data to PI
+  led_debug();
 }
 
 
@@ -73,6 +92,5 @@ void loop()
   for(int i = 0; i < ANALOG_SEN_AMOUNT; i++) {
     analog_sensor_data[i] = analogRead(analog_sensors[i]);
   }
-
-  delay(1000);
+  set_led();
 }
