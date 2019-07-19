@@ -38,9 +38,12 @@ int analog_sensor_data[1];      // All bytes of analog sensors
 
 // Debug variables
 
-#define LED_ON_TIME 50    // Time led will be on when data is send
+#define LED_ON_TIME 20    // Time led will be on when data is send
+#define LED_ON_TIME_STANDBY 100
 bool led_on = false;
+bool led_standby_mode;
 unsigned long led_last_change = 0;
+unsigned long led_last_change_standby = 0;
 
 inline void led_debug() {
   led_last_change = millis();
@@ -51,6 +54,10 @@ inline void set_led() {
   if(millis() - led_last_change >= LED_ON_TIME && led_on) {
     led_on = false;
   }
+  if(millis() - led_last_change >= 2000 && millis() - led_last_change_standby >= LED_ON_TIME_STANDBY) {
+    led_on = !led_on;
+    led_last_change_standby = millis();
+  } 
   digitalWrite(LED_BUILTIN, led_on);
 }
 
