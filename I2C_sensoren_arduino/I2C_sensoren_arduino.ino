@@ -1,148 +1,44 @@
 #include <Wire.h>
 
-#define SERIAL_OUT
+#define SLAVE_ADDRESS 0x08
 
-// Definition: <Sensortyp>_<Ausrichtung>_<Seite>[_Entfernung/Größe/Kennzeichnung]
-
-// DIGITAL ======
-
-#define DIGITAL_SEN_AMOUNT 8
-
-#define IR_VORNE_L 4
-#define IR_VORNE_R 5
-
-#define IR_LINKS_V 6
-#define IR_LINKS_H 7
-
-#define IR_RECHTS_V 8
-#define IR_RECHTS_H 9
-
-#define T_HINTEN_L 10
-#define T_HINTEN_R 11
-
-// ANALOG =======
-
-#define ANALOG_SEN_AMOUNT 1
-
-#define IR_VORNE_M A0
-
-// END DEF =====
-
-
-int digital_sensors[DIGITAL_SEN_AMOUNT] = {IR_VORNE_L, IR_VORNE_R, IR_LINKS_V, IR_LINKS_H, IR_RECHTS_V, IR_RECHTS_H, T_HINTEN_L, T_HINTEN_R};
-bool digital_sensor_data[DIGITAL_SEN_AMOUNT];    // All bits of digital sensors
-
-#ifdef SERIAL_OUT
-String digital_sensors_str[DIGITAL_SEN_AMOUNT] = {"IR_VORNE_L", "IR_VORNE_R", "IR_LINKS_V", "IR_LINKS_H", "IR_RECHTS_V", "IR_RECHTS_H", "T_HINTEN_L", "T_HINTEN_R"};
-#endif
-
-// analog_sensors is an array because maybe there will be some more sensors.
-int analog_sensors[1] = {IR_VORNE_M};
-int analog_sensor_data[1];      // All bytes of analog sensors
-
-
-
-
-// Debug stuff
-
-#define LED_ON_TIME 20    // Time led will be on when data is send
-#define LED_ON_TIME_STANDBY 100
-bool led_on = false;
-bool led_standby_mode;
-unsigned long led_last_change = 0;
-unsigned long led_last_change_standby = 0;
-
-inline void led_debug() {
-  led_last_change = millis();
-  led_on = true;
-}
-
-inline void set_led() {
-  if (millis() - led_last_change >= LED_ON_TIME && led_on) {
-    led_on = false;
-  }
-  if (millis() - led_last_change >= 2000 && millis() - led_last_change_standby >= LED_ON_TIME_STANDBY) {
-    led_on = !led_on;
-    led_last_change_standby = millis();
-  }
-  digitalWrite(LED_BUILTIN, led_on);
-}
-
-
-void sendData() {
-
-#ifdef SERIAL_OUT
-  Serial.print("Send data");
-#endif
-  
-  // CHANGE FOLLOWING CODE IF MORE THAN 8 DIGITAL SENSORS CONNECTED!!!
-
-  byte compressed_data_digital = digital_sensor_data[0];
-  for (int i = 1; i < 8; i++) {
-    compressed_data_digital = (compressed_data_digital << 1) | digital_sensor_data[i];
-  }
-
-  Wire.write(compressed_data_digital); // return data to PI
-  Wire.write(analog_sensor_data[0] & 0xff);
-  Wire.write((analog_sensor_data[0] >> 8) & 0xff);
-  
-  // UNCOMMENT WHEN USING MULTIPLE ANALOG SENSORS
-  /*for(int i = 0; i < ANALOG_SEN_AMOUNT; i++) {
-    Wire.write(analog_sensor_data[i] & 0xff);
-    Wire.write((analog_sensor_data[i] >> 8) & 0xff);
-    }*/
-
-  led_debug();
- 
-}
-
-void receiveEvent(int howMany) {
-  while (1 < Wire.available()) { // loop through all but the last
-    char c = Wire.read(); // receive byte as a character
-    Serial.print(c);         // print the character
-  }
-  Serial.println("");         // print the integer
-}
-
+#define SERIAL_OUTPUT
 
 void setup() {
-  Wire.begin(0x08); // begin I2C Connection with 0x09 address
-
-  for (int i = 0; i < DIGITAL_SEN_AMOUNT; i++) {
-    digital_sensor_data[i] = 0;
-  }
-  for (int i = 0; i < ANALOG_SEN_AMOUNT; i++) {
-    analog_sensor_data[i] = 0;
-  }
-
-  Wire.onRequest(sendData); // sendData is called when Pi requests data
+  Wire.begin(SLAVE_ADDRESS);
   Wire.onReceive(receiveEvent);
 
-#ifdef SERIAL_OUT
-  Serial.begin(115200);  
+  pinMode(LED_BUILTIN, OUTPUT);
+
+#ifdef SERIAL_OUTPUT
+  Serial.begin(115200);
 #endif
-  
-  pinMode(LED_BUILTIN, OUTPUT);   // Debug LED
 }
 
 
-void loop()
-{
-  for (int i = 0; i < DIGITAL_SEN_AMOUNT; i++) {
-    digital_sensor_data[i] = digitalRead(digital_sensors[i]);
-  }
-  for (int i = 0; i < ANALOG_SEN_AMOUNT; i++) {
-    analog_sensor_data[i] = analogRead(analog_sensors[i]);
-  }
-  set_led();
 
-#ifdef SERIAL_OUT
-  for(int i = 0; i < DIGITAL_SEN_AMOUNT; i++) {
-    Serial.print(digital_sensors_str[i]);
-    Serial.print(" ");
-    Serial.print(digital_sensor_data[i]);
-    Serial.print(" ");
-  }
-  Serial.println("");
+void loop() {
+  // put your main code here, to run repeatedly:
+
+}
+
+
+void receiveEvent(int byte_amount) {
+
+#ifdef SERIAL_OUTPUT
+  Serial.print("Anzahl: ");
+  Serial.println(byte_amount);
 #endif
+
+  digitalWrite(LED_BUILTIN, HIGH);
+
+  int command = Wire.read();
+  
+  if(command == 1) {
+    Serial.println("1");
+  }
+  
+
+
+  digitalWrite(LED_BUILTIN, LOW);
 }
