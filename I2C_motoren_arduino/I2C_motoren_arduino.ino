@@ -2,12 +2,13 @@
 #include "Motor.h"
 
 #define SERIAL_OUTPUT
+#define SLAVE_ADDRESS 0x08
 
 Motor motorRight(5, 7, 8, A0, 2);
 Motor motorLeft(6, 9, 10, A1, 3);
 
 void setup() {
-  Wire.begin(0x08);
+  Wire.begin(SLAVE_ADDRESS);
   Wire.onReceive(receiveEvent);
 
   pinMode(LED_BUILTIN, OUTPUT);
