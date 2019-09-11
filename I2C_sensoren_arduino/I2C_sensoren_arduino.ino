@@ -118,6 +118,7 @@ void receiveEvent(int byte_amount) {
 
 void requestEvent() {
   if(command == ALL_SENSOR_VALUES) {
+  
     byte compressed_data_digital = digital_sensor_data[0];
     for (int i = 1; i < 8; i++) {
       compressed_data_digital = (compressed_data_digital << 1) | digital_sensor_data[i];
@@ -127,10 +128,18 @@ void requestEvent() {
  #ifdef DEBUG_COM
     Serial.println("Send data.");
  #endif
+ 
   } else if(command == DIGITAL_SENSOR_VALUES) {
+ 
+    byte compressed_data_digital = digital_sensor_data[0];
+    for (int i = 1; i < 8; i++) {
+      compressed_data_digital = (compressed_data_digital << 1) | digital_sensor_data[i];
+    }
     
-    
-    
+    Wire.write(compressed_data_digital); // return data to PI 
+ #ifdef DEBUG_COM
+    Serial.println("Send data.");
+  
   } else if(command == ANALOG_SENSOR_VALUES) {
 
 
