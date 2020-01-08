@@ -20,6 +20,9 @@ void Motor::setupInterruptHandler(void (*ISR)(void), int value) {
   attachInterrupt(digitalPinToInterrupt(_pin_sf), ISR, RISING);
 }
 
+
+// Setzt Richtung und Geschwindigkeit des Motors.
+// direction = MOTOR_FORWARD oder MOTOR_BACKWARD
 void Motor::update(int direction, int speed) {
   if(direction == MOTOR_FORWARD) {
     vor(speed);
@@ -28,6 +31,9 @@ void Motor::update(int direction, int speed) {
   }
 }
 
+
+// Setzt den Zustand des Motors.
+// Defines aus Motor.h werden genutzt
 void Motor::update(int state) {
   if (state == MOTOR_OFF) {
     aus();

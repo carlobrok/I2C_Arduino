@@ -7,6 +7,21 @@
 Motor motorRight(5, 7, 8, A0, 2);
 Motor motorLeft(6, 9, 10, A1, 3);
 
+template<class T>
+void print(T message) {
+#ifdef SERIAL_OUTPUT
+  Serial.print(message);
+#endif
+}
+
+template<class T>
+void println(T message) {
+#ifdef SERIAL_OUTPUT
+  Serial.println(message);
+#endif
+}
+
+
 void setup() {
   Wire.begin(SLAVE_ADDRESS);
   Wire.onReceive(receiveEvent);
@@ -16,12 +31,14 @@ void setup() {
 #ifdef SERIAL_OUTPUT
   Serial.begin(115200);
 #endif
+
+  println("Motoren Arduino");
+  print("Adresse: "); Serial.println(SLAVE_ADDRESS);
+
 }
 
 inline void recieveError() {
-#ifdef SERIAL_OUTPUT
-  Serial.println("WARNING: Recieved wrong/corrupted data");
-#endif
+  println("WARNING: Recieved wrong/corrupted data");
 }
 
 
@@ -33,14 +50,15 @@ void loop() {
   delay(100);
   digitalWrite(LED_BUILTIN, LOW);
   delay(3000 - 100);
+  motorRight.update(MOTOR_FORWARD, 255);
 }
 
 void receiveEvent(int byte_amount) {
 
-#ifdef SERIAL_OUTPUT
-  Serial.print("Anzahl: ");
-  Serial.println(byte_amount);
-#endif
+
+  print("Anzahl: ");
+  println(byte_amount);
+
 
   if (byte_amount == 2) {
     recieveError();
@@ -52,20 +70,22 @@ void receiveEvent(int byte_amount) {
   int command = Wire.read();
   int puffer_b = Wire.read();
 
-  Serial.print("Comand: ");
-  Serial.print(command);
-  Serial.print("\tPuffer: ");
-  Serial.println(puffer_b);
+  print("Comand: ");
+  print(command);
+  print("\tBuffer: ");
+  print(puffer_b);
 
   int inbytes[byte_amount - 2];
 
   int index = 0;
-  while (Wire.available() && index < byte_amount - 2) {
+  print("  data: [");
+  while (Wire.available()/* && index < byte_amount - 2*/) {
     inbytes[index++] = Wire.read();
-    Serial.print(inbytes[index - 1]);
-    Serial.print(" ");
+    print(inbytes[index - 1]);
+    if(Wire.available() > 0)
+      print(";");
   }
-  Serial.println();
+  println("]");
 
 
   if (command == MOTOR_DIR_PWM) {
@@ -73,6 +93,8 @@ void receiveEvent(int byte_amount) {
     int dir = inbytes[1];
     int pwm = inbytes[2];
 
+    println("MOTOR_DIR_PWM");
+    
     if (side == MOTOR_LEFT) {
       motorLeft.update(dir, pwm);
     } else if (side == MOTOR_RIGHT) {
@@ -81,19 +103,22 @@ void receiveEvent(int byte_amount) {
       motorLeft.update(dir, pwm);
       motorRight.update(dir, pwm);
     }
-  }
-  else if (command == MOTOR_DIR_PWM_BOTH) {
+  } else if (command == MOTOR_DIR_PWM_BOTH) {
     int dir_l = inbytes[0];
     int pwm_l = inbytes[1];
     int dir_r = inbytes[2];
     int pwm_r = inbytes[3];
 
+    println("MOTOR_DIR_PWM_BOTH");
+    
     motorLeft.update(dir_l, pwm_l);
     motorRight.update(dir_r, pwm_r);
 
   } else if (command = MOTOR_STATE) {
     int side = inbytes[0];
     int state = inbytes[1];
+
+    println("MOTOR_STATE");
 
     if (side == MOTOR_LEFT) {
       motorLeft.update(state);
