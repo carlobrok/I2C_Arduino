@@ -50,7 +50,6 @@ void loop() {
   delay(100);
   digitalWrite(LED_BUILTIN, LOW);
   delay(3000 - 100);
-  motorRight.update(MOTOR_FORWARD, 255);
 }
 
 void receiveEvent(int byte_amount) {
@@ -94,7 +93,7 @@ void receiveEvent(int byte_amount) {
     int pwm = inbytes[2];
 
     println("MOTOR_DIR_PWM");
-    
+
     if (side == MOTOR_LEFT) {
       motorLeft.update(dir, pwm);
     } else if (side == MOTOR_RIGHT) {
@@ -110,7 +109,7 @@ void receiveEvent(int byte_amount) {
     int pwm_r = inbytes[3];
 
     println("MOTOR_DIR_PWM_BOTH");
-    
+
     motorLeft.update(dir_l, pwm_l);
     motorRight.update(dir_r, pwm_r);
 
