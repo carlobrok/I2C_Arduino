@@ -2,8 +2,8 @@
 
 #define SLAVE_ADDRESS 0x09
 
-#define DEBUG_COM       // Auskommentieren wenn die Kommunikation nicht auf der Seriellen Schnittstelle ausgegeben werden soll
-#define DEBUG_SEN_DATA  // Auskommentieren wenn die Sensor daten nicht ausgegeben werden sollen
+//#define DEBUG_COM       // Auskommentieren wenn die Kommunikation nicht auf der Seriellen Schnittstelle ausgegeben werden soll
+//#define DEBUG_SEN_DATA  // Auskommentieren wenn die Sensor daten nicht ausgegeben werden sollen
 
 #define ALL_SENSOR_VALUES 1
 #define DIGITAL_SENSOR_VALUES 2
@@ -79,7 +79,7 @@ void setup() {
 #if defined(DEBUG_COM) || defined(DEBUG_SEN_DATA)
   Serial.begin(115200);
   Serial.println("Sensor Arduino");
-  Serial.print("Adresse: "); Serial.prinln(SLAVE_ADDRESS);
+  Serial.print("Adresse: "); Serial.println(SLAVE_ADDRESS);
   println("Communication debugging is enabled!");
 #endif
 }
@@ -101,8 +101,10 @@ void loop() {
     Serial.print(digital_sensor_data[i]);
     Serial.print(" ");
   }
-  Serial.println("");
+  Serial.print("A0  ");
+  Serial.println(analog_sensor_data[0]);
 #endif
+  delay(5);
 }
 
 
@@ -113,22 +115,28 @@ void receiveEvent(int byte_amount) {
 
   digitalWrite(LED_BUILTIN, HIGH);
 
-  command = Wire.read();
-
-#ifdef DEBUG_COM
-  Serial.print("; ");
-  Serial.print(command);
-  if (command == ALL_SENSOR_VALUES) {
-    Serial.print(" > write all sensor values");
-  } else if (command == DIGITAL_SENSOR_VALUES) {
-    Serial.print(" > write only digital sensor values");
-  } else if (command == ANALOG_SENSOR_VALUES) {
-    Serial.print(" > write only analog sensor values");
+  if(byte_amount == 1) {
+    command = Wire.read();
+     
+  #ifdef DEBUG_COM
+    Serial.print("; ");
+    Serial.print(command);
+    if (command == ALL_SENSOR_VALUES) {
+      Serial.print(" > write all sensor values");
+    } else if (command == DIGITAL_SENSOR_VALUES) {
+      Serial.print(" > write only digital sensor values");
+    } else if (command == ANALOG_SENSOR_VALUES) {
+      Serial.print(" > write only analog sensor values");
+    }
+    Serial.println();
+  #endif
+  
+    digitalWrite(LED_BUILTIN, LOW);
+  } else {
+    while (Wire.available()) {
+      Wire.read();
+    }
   }
-  Serial.println();
-#endif
-
-  digitalWrite(LED_BUILTIN, LOW);
 }
 
 
@@ -143,7 +151,7 @@ void requestEvent() {
     Wire.write(compressed_data_digital); // return data to PI
     Wire.write(analog_sensor_data[0] & 0xff);
     Wire.write((analog_sensor_data[0] >> 8) & 0xff);
-
+    Serial.println(compressed_data_digital, BIN);
     println(" > Send data.");
 
 
@@ -155,7 +163,7 @@ void requestEvent() {
     }
 
     Wire.write(compressed_data_digital); // return data to PI
-
+    Serial.println(compressed_data_digital, BIN);
     println(" > Send data.");
 
   } else if (command == ANALOG_SENSOR_VALUES) {
